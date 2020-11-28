@@ -1,0 +1,7 @@
+{
+  "name": "zone-cameras",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}

@@ -1,0 +1,50 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>
+      Zone Cameras
+    </ion-title>
+    <ion-buttons slot="primary" *ngIf="!showForm">
+      <ion-button (click)="logout()">
+        <ion-icon slot="icon-only" name="log-out-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Zone Cameras</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+<div id="container" *ngIf="showForm">
+  <ion-item>
+    <ion-label position="stacked">Hostname</ion-label>
+    <ion-input type="text" [(ngModel)]="loginForm.host"></ion-input>
+  </ion-item>
+  <ion-item>
+    <ion-label position="stacked">User</ion-label>
+    <ion-input type="text" [(ngModel)]="loginForm.user"></ion-input>
+  </ion-item>
+  <ion-item>
+    <ion-label position="stacked">Password</ion-label>
+    <ion-input type="password" [(ngModel)]="loginForm.password"></ion-input>
+  </ion-item>
+  <ion-button (click)="submit()">Enter</ion-button>
+</div>
+
+<div *ngIf="!showForm">
+    <ion-item-divider>
+      <ion-label>
+        Monitors
+      </ion-label>
+    </ion-item-divider>
+    <ion-item *ngFor="let m of monitors" button (click)="openMonitor(m)">
+      <ion-label>
+        {{ m.name }}
+      </ion-label>
+    </ion-item>
+</div>
+
+</ion-content>
