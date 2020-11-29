@@ -1,5 +1,5 @@
 {
-  "appId": "io.ionic.starter",
+  "appId": "com.cmgustavo.zonecameras",
   "appName": "zone-cameras",
   "bundledWebRuntime": false,
   "npmClient": "npm",
