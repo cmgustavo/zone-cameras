@@ -3,7 +3,7 @@ import { AlertController, NavController } from '@ionic/angular';
 
 import { ZoneminderService } from '../services/zoneminder.service';
 
-import { LoginForm } from '../services/services.types';
+import { LoginForm, ZmMonitor } from '../services/services.types';
 
 @Component({
   selector: 'app-home',
@@ -27,33 +27,38 @@ export class HomePage {
   ) {}
 
   ionViewWillEnter() {
-    this.zmService.isConnected().then(connected => {
-      if (!connected) {
-        this.showForm = true;
-        return;
-      }
-      this.zmService.getMonitors().then(monitors => {
-        this.monitors = monitors;
-      });
-    });
+    this.showForm = this.zmService.loginRequired;
+    if (!this.showForm) {
+      this.verifyConnection();
+    }
   }
 
-  openMonitor(monitor) {
-    this.navCtrl.navigateForward('/monitor/' + monitor.id);
+  async verifyConnection() {
+    const isConnected = await this.zmService.isConnected();
+    if (isConnected) {
+      this.setMonitors();
+    }
   }
 
-  submit() {
+  async setMonitors() {
+    this.monitors = await this.zmService.getMonitors();
+  }
+
+  openMonitor(monitor: ZmMonitor) {
+    this.navCtrl.navigateForward('/monitor/' + monitor.id + '/' + monitor.name);
+  }
+
+  submit(data) {
+    this.loginForm = data.form.value;
     this.zmService
-      .login(this.loginForm)
-      .then(isConnected => {
-        this.showForm = false;
-        this.zmService.getMonitors().then(monitors => {
-          this.monitors = monitors;
-        });
-      })
-      .catch(err => {
-        this.showError(err);
-      });
+    .login(this.loginForm)
+    .then(() => {
+      this.showForm = false;
+      this.setMonitors();
+    })
+    .catch(err => {
+      this.showError(err);
+    });
   }
 
   logout() {

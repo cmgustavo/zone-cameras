@@ -1,4 +1,4 @@
-<ion-header [translucent]="true">
+<ion-header [translucent]="true" *ngIf="!showForm">
   <ion-toolbar>
     <ion-title>
       Zone Cameras
@@ -11,30 +11,45 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
+<ion-content [fullscreen]="true" padding>
+  <ion-header collapse="condense" *ngIf="!showForm">
     <ion-toolbar>
       <ion-title size="large">Zone Cameras</ion-title>
     </ion-toolbar>
   </ion-header>
 
-<div id="container" *ngIf="showForm">
-  <ion-item>
-    <ion-label position="stacked">Hostname</ion-label>
-    <ion-input type="text" [(ngModel)]="loginForm.host"></ion-input>
-  </ion-item>
-  <ion-item>
-    <ion-label position="stacked">User</ion-label>
-    <ion-input type="text" [(ngModel)]="loginForm.user"></ion-input>
-  </ion-item>
-  <ion-item>
-    <ion-label position="stacked">Password</ion-label>
-    <ion-input type="password" [(ngModel)]="loginForm.password"></ion-input>
-  </ion-item>
-  <ion-button (click)="submit()">Enter</ion-button>
-</div>
+  <div id="container" *ngIf="showForm">
+    <form #form="ngForm" (ngSubmit)="submit(form)">
+      <ion-grid>
+        <ion-row color="primary" justify-content-center>
+          <ion-col align-self-center size-md="6" size-lg="5" size-xs="12">
+            <div text-center>
+              <h3>Login ZoneMinder</h3>
+            </div>
+            <div padding>
+              <ion-item>
+                <ion-label position="stacked">Hostname</ion-label>
+                <ion-input name="host" type="text" placeholder="example.com" ngModel required></ion-input>
+              </ion-item>
+              <ion-item>
+                <ion-label position="stacked">Username</ion-label>
+                <ion-input name="user" type="text" placeholder="user" ngModel required></ion-input>
+              </ion-item>
+              <ion-item>
+                <ion-label position="stacked">Password</ion-label>
+                <ion-input name="password" type="password" placeholder="pass" ngModel required></ion-input>
+              </ion-item>
+            </div>
+            <div padding>
+              <ion-button size="large" type="submit" [disabled]="form.invalid" expand="block">Login</ion-button>
+            </div>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </form>
+  </div>
 
-<div *ngIf="!showForm">
+  <div *ngIf="!showForm">
     <ion-item-divider>
       <ion-label>
         Monitors
@@ -45,6 +60,6 @@
         {{ m.name }}
       </ion-label>
     </ion-item>
-</div>
+  </div>
 
 </ion-content>

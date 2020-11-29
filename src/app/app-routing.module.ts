@@ -12,7 +12,7 @@ const routes: Routes = [
     pathMatch: 'full'
   },
   {
-    path: 'monitor/:id',
+    path: 'monitor/:id/:name',
     loadChildren: () =>
       import('./monitor/monitor.module').then(m => m.MonitorPageModule)
   }

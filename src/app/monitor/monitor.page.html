@@ -4,19 +4,13 @@
       <ion-back-button></ion-back-button>
     </ion-buttons>
     <ion-title>
-      Monitor
+      {{ name }}
     </ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Monitor</ion-title>
-    </ion-toolbar>
-  </ion-header>
-
+<ion-content>
   <div id="container">
-    <img src="{{ streamUrl }}">
+    <img [src]="streamUrl">
   </div>
 </ion-content>

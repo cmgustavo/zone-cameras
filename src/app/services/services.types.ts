@@ -14,6 +14,15 @@ export interface ZmToken {
   apiversion: string;
 }
 
+export interface ZmMonitor {
+  id: string;
+  name: string;
+  dayEvents: number;
+  enabled: boolean;
+  function: string;
+  status: string;
+}
+
 export interface ZmError {
   success: boolean;
   data: {
@@ -35,6 +44,6 @@ export interface LoginForm {
 }
 
 export const StorageKeys = {
-  CREDENTIALS: 'credentials',
+  LOGIN: 'login',
   TOKEN: 'token'
 };

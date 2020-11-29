@@ -10,6 +10,7 @@ import { ZoneminderService } from '../services/zoneminder.service';
   styleUrls: ['./monitor.page.scss']
 })
 export class MonitorPage {
+  public name: string;
   public streamUrl: string;
   constructor(
     private route: ActivatedRoute,
@@ -18,6 +19,8 @@ export class MonitorPage {
 
   ionViewWillEnter() {
     const id = this.route.snapshot.paramMap.get('id');
+    const name = this.route.snapshot.paramMap.get('name');
+    this.name = name;
     this.streamUrl = this.zmService.viewStream(id);
   }
 }

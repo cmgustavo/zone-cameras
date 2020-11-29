@@ -7,6 +7,7 @@ import {
   LoginForm,
   StorageKeys,
   ZmError,
+  ZmMonitor,
   ZmToken,
   ZmVersion
 } from './services.types';
@@ -19,23 +20,30 @@ const POSFIX_URL = '/zm/api/';
 })
 export class ZoneminderService {
   private token: ZmToken;
-  private credentials: LoginForm;
-  public monitors;
+  private loginData: LoginForm;
+  public loginRequired: boolean;
 
   constructor(
     private http: HttpClient,
     private persistenceService: PersistenceService
   ) {
     console.log('Loading ZoneminderService');
+    this.init();
+  }
+
+  async init() {
+    this.loginData = await this.getloginData();
+    this.token = await this.getTokens();
+    this.loginRequired = !this.loginData || !this.token;
   }
 
   removeData() {
     this.persistenceService.clear();
   }
 
-  private setCredentials(newCredentials: LoginForm) {
-    this.credentials = newCredentials;
-    this.persistenceService.set(StorageKeys.CREDENTIALS, newCredentials);
+  private setloginData(newloginData: LoginForm) {
+    this.loginData = newloginData;
+    this.persistenceService.set(StorageKeys.LOGIN, newloginData);
   }
 
   private setToken(newToken: ZmToken) {
@@ -43,8 +51,8 @@ export class ZoneminderService {
     this.persistenceService.set(StorageKeys.TOKEN, this.token);
   }
 
-  getCredentials(): Promise<LoginForm> {
-    return this.persistenceService.get(StorageKeys.CREDENTIALS);
+  getloginData(): Promise<LoginForm> {
+    return this.persistenceService.get(StorageKeys.LOGIN);
   }
 
   getTokens(): Promise<ZmToken> {
@@ -53,23 +61,22 @@ export class ZoneminderService {
 
   isConnected(): Promise<boolean> {
     return new Promise(async resolve => {
-      const credentials = await this.getCredentials();
+      const loginData = await this.getloginData();
       const tokens = await this.getTokens();
-      if (!credentials || !tokens) {
+      if (!loginData || !tokens) {
         return resolve(false);
       }
-      this.credentials = credentials;
       const isOk = await this.verifyConnection(
-        credentials.host,
+        loginData.host,
         tokens.access_token
       );
       if (!isOk) {
         const refreshToken = await this.getRefreshToken(
-          credentials,
+          loginData,
           tokens.refresh_token
         );
         if (!refreshToken) {
-          const newToken = await this.getNewToken(credentials);
+          const newToken = await this.getNewToken(loginData);
           if (!newToken) {
             return resolve(false);
           }
@@ -79,18 +86,18 @@ export class ZoneminderService {
         this.setToken(refreshToken);
         return resolve(true);
       }
-      this.token = tokens;
       return resolve(true);
     });
   }
 
-  login(loginCredentials: LoginForm): Promise<boolean> {
+  login(loginloginData: LoginForm): Promise<string> {
     return new Promise((resolve, reject) => {
-      this.getNewToken(loginCredentials)
+      this.getNewToken(loginloginData)
         .then(newToken => {
-          this.setCredentials(loginCredentials);
+          this.setloginData(loginloginData);
           this.setToken(newToken);
-          resolve(true);
+          console.log('Logged ZM: ' + this.token.version);
+          resolve();
         })
         .catch(err => {
           reject(err);
@@ -111,7 +118,7 @@ export class ZoneminderService {
     return new Promise((resolve, reject) => {
       this.http.get(url).subscribe(
         (checkInfo: ZmVersion) => {
-          console.log('ZoneMinder Version: ', checkInfo.version);
+          console.log('Connected ZM: ', checkInfo.version);
           resolve(true);
         },
         err => {
@@ -127,12 +134,15 @@ export class ZoneminderService {
     return this.listMonitors();
   }
 
-  getEnabledMonitors(d: Array<any>): Array<any> {
-    const monitors = [];
+  private getEnabledMonitors(d: Array<any>): Array<ZmMonitor> {
+    const monitors: Array<ZmMonitor> = [];
     for (let i = 0, len = d.length; i < len; i++) {
       monitors.push({
         id: d[i].Monitor.Id,
         name: d[i].Monitor.Name,
+        dayEvents: Number(d[i].Monitor.DayEvents) || 0,
+        enabled: d[i].Monitor.Enabled === '1' ? true : false,
+        function: d[i].Monitor.Function,
         status: d[i].Monitor_Status.Status
       });
     }
@@ -142,23 +152,30 @@ export class ZoneminderService {
   viewStream(id): string {
     return (
       PREFIX_URL +
-      this.credentials.host +
+      this.loginData.host +
       '/zm/cgi-bin/nph-zms?scale=50&width=640p&height=480px&mode=jpeg&maxfps=5&buffer=1000&&monitor=' +
       id +
       '&token=' +
-      this.token.access_token +
-      '&connkey=36139'
-    );
+      this.token.access_token);
   }
 
-  private isNewToken(err: string): Promise<boolean> {
+  private isTokenExpired(err: string): Promise<boolean> {
     return new Promise(async resolve => {
       if (err === 'Expired token') {
-        const newToken = await this.getRefreshToken(
-          this.credentials,
+        const refreshToken = await this.getRefreshToken(
+          this.loginData,
           this.token.refresh_token
         );
-        this.setToken(newToken);
+        if (!refreshToken) {
+          const newToken = await this.getNewToken(this.loginData);
+          if (!newToken) {
+            throw new Error('Could not get New Token');
+            return resolve(false);
+          }
+          this.setToken(newToken);
+          return resolve(true);
+        }
+        this.setToken(refreshToken);
         return resolve(true);
       }
       resolve(false);
@@ -168,7 +185,7 @@ export class ZoneminderService {
   private listMonitors(): Promise<any[]> {
     const url =
       PREFIX_URL +
-      this.credentials.host +
+      this.loginData.host +
       POSFIX_URL +
       'monitors.json?token=' +
       this.token.access_token;
@@ -180,8 +197,9 @@ export class ZoneminderService {
         async err => {
           const zmError: ZmError = err.error;
           console.error('List Monitors: ' + zmError.data.name);
-          const doRefresh = await this.isNewToken(zmError.data.name);
-          if (doRefresh) {
+          const tokenExpired = await this.isTokenExpired(zmError.data.name);
+          if (tokenExpired) {
+            // Try with new Token
             this.listMonitors();
           } else {
             reject(zmError.data.message);
@@ -191,11 +209,11 @@ export class ZoneminderService {
     });
   }
 
-  private getNewToken(credentials: LoginForm): Promise<ZmToken> {
-    const url = PREFIX_URL + credentials.host + POSFIX_URL + 'host/login.json';
+  private getNewToken(loginData: LoginForm): Promise<ZmToken> {
+    const url = PREFIX_URL + loginData.host + POSFIX_URL + 'host/login.json';
     const data = {
-      user: credentials.user,
-      pass: credentials.password
+      user: loginData.user,
+      pass: loginData.password
     };
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
@@ -216,14 +234,14 @@ export class ZoneminderService {
   }
 
   private getRefreshToken(
-    credentials: LoginForm,
+    loginData: LoginForm,
     refreshToken: string
   ): Promise<ZmToken> {
     // refresh token
-    const url = PREFIX_URL + credentials.host + POSFIX_URL + 'host/login.json';
+    const url = PREFIX_URL + loginData.host + POSFIX_URL + 'host/login.json';
     const data = {
-      user: credentials.user,
-      pass: credentials.password,
+      user: loginData.user,
+      pass: loginData.password,
       refresh_token: refreshToken
     };
     const headers = new HttpHeaders({
