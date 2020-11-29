@@ -9,7 +9,7 @@ import { ZoneminderService } from '../services/zoneminder.service';
   templateUrl: './monitor.page.html',
   styleUrls: ['./monitor.page.scss']
 })
-export class MonitorPage {
+export class MonitorPage implements OnInit {
   public name: string;
   public streamUrl: string;
   constructor(
@@ -17,7 +17,7 @@ export class MonitorPage {
     private zmService: ZoneminderService
   ) {}
 
-  ionViewWillEnter() {
+  ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
     const name = this.route.snapshot.paramMap.get('name');
     this.name = name;

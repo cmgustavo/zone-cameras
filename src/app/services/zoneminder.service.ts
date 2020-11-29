@@ -96,6 +96,7 @@ export class ZoneminderService {
         .then(newToken => {
           this.setloginData(loginloginData);
           this.setToken(newToken);
+          this.loginRequired = !this.loginData || !this.token;
           console.log('Logged ZM: ' + this.token.version);
           resolve();
         })
