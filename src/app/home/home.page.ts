@@ -11,7 +11,7 @@ import { LoginForm } from '../services/services.types';
   styleUrls: ['home.page.scss']
 })
 export class HomePage {
-  public showForm: boolean = false;
+  public showForm: boolean;
   public loginForm: LoginForm = {
     host: '',
     user: '',
