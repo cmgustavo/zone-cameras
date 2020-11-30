@@ -1,6 +1,6 @@
 {
   "appId": "com.cmgustavo.zonecameras",
-  "appName": "zone-cameras",
+  "appName": "Zone Cameras",
   "bundledWebRuntime": false,
   "npmClient": "npm",
   "webDir": "www",
