@@ -4,9 +4,10 @@
   "bundledWebRuntime": false,
   "npmClient": "npm",
   "webDir": "www",
+  "hideLogs": true,
   "plugins": {
     "SplashScreen": {
-      "launchShowDuration": 0
+      "launchShowDuration": 5000
     }
   },
   "cordova": {}

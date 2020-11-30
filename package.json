@@ -12,7 +12,18 @@
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "clean-all": "git clean -dfx"
+    "clean-all": "git clean -dfx",
+    "open:ios": "npx cap open ios",
+    "open:android": "npx cap open android",
+    "build:prepare:ios": "npx cap add ios",
+    "build:prepare:android": "npx cap add android",
+    "build:resources:ios": "cordova-res ios --skip-config --copy",
+    "build:resources:android": "cordova-res android --skip-config --copy",
+    "build:prod": "ionic build --prod",
+    "build:ios": "ionic capacitor copy ios",
+    "build:android": "ionic capacitor copy android",
+    "final:ios": "npm run build:prod && npm run build:prepare:ios && npm run build:resources:ios && npm run open:ios",
+    "final:android": "npm run build:prod && npm run build:prepare:android && npm run build:resources:android && npm run open:android"
   },
   "dependencies": {
     "@angular/common": "~11.0.2",
