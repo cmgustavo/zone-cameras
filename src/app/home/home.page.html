@@ -22,7 +22,7 @@
     <form #form="ngForm" (ngSubmit)="submit(form)">
       <ion-grid>
         <ion-row color="primary" justify-content-center>
-          <ion-col align-self-center size-md="6" size-lg="5" size-xs="12">
+          <ion-col align-self-center>
             <div text-center>
               <h3>Login ZoneMinder</h3>
             </div>
@@ -50,16 +50,15 @@
   </div>
 
   <div *ngIf="!showForm">
-    <ion-item-divider>
-      <ion-label>
-        Monitors
-      </ion-label>
-    </ion-item-divider>
-    <ion-item *ngFor="let m of monitors" button (click)="openMonitor(m)">
-      <ion-label>
-        {{ m.name }}
-      </ion-label>
-    </ion-item>
+    <ion-card *ngFor="let m of monitors" button [disabled]="!m.enabled" (click)="openMonitor(m)">
+      <ion-card-header>
+        <ion-card-subtitle>{{ m.dayEvents }} events per day</ion-card-subtitle>
+        <ion-card-title>{{ m.name }}</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        {{ m.status }} on {{ m.function }}
+      </ion-card-content>
+    </ion-card>
   </div>
 
 </ion-content>

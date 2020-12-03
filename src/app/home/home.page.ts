@@ -1,5 +1,9 @@
 import { Component } from '@angular/core';
-import { AlertController, NavController } from '@ionic/angular';
+import {
+  AlertController,
+  NavController,
+  LoadingController
+} from '@ionic/angular';
 
 import { ZoneminderService } from '../services/zoneminder.service';
 
@@ -22,20 +26,14 @@ export class HomePage {
 
   constructor(
     private zmService: ZoneminderService,
-    public alertController: AlertController,
-    public navCtrl: NavController
+    private alertController: AlertController,
+    private navCtrl: NavController,
+    private loadingController: LoadingController
   ) {}
 
   ionViewWillEnter() {
-    this.showForm = this.zmService.loginRequired;
+    this.showForm = this.zmService.isLoggued() ? false : true;
     if (!this.showForm) {
-      this.verifyConnection();
-    }
-  }
-
-  async verifyConnection() {
-    const isConnected = await this.zmService.isConnected();
-    if (isConnected) {
       this.setMonitors();
     }
   }
@@ -48,17 +46,23 @@ export class HomePage {
     this.navCtrl.navigateForward('/monitor/' + monitor.id + '/' + monitor.name);
   }
 
-  submit(data) {
+  async submit(data) {
     this.loginForm = data.form.value;
-    this.zmService
-    .login(this.loginForm)
-    .then(() => {
-      this.showForm = false;
-      this.setMonitors();
-    })
-    .catch(err => {
-      this.showError(err);
+    const loading = await this.loadingController.create({
+      message: 'Please wait...'
     });
+    await loading.present();
+    this.zmService
+      .login(this.loginForm)
+      .then(() => {
+        loading.dismiss();
+        this.showForm = false;
+        this.setMonitors();
+      })
+      .catch(err => {
+        loading.dismiss();
+        this.showError(err);
+      });
   }
 
   logout() {
@@ -69,7 +73,7 @@ export class HomePage {
 
   async showError(msg: string) {
     const alert = await this.alertController.create({
-      header: 'Connection error',
+      header: 'Login Error',
       message: msg,
       buttons: ['OK']
     });
