@@ -99,10 +99,10 @@ export class ZoneminderService {
           resolve(checkInfo.version);
         },
         async err => {
-          if (err && err.statusText) {
+          const zmError: ZmError = err.error;
+          if (!zmError) {
             return reject('Could not connect to ZM Server');
           }
-          const zmError: ZmError = err.error;
           console.error('Get Version Error: ' + zmError.data.name);
           if (this.isTokenExpired(zmError)) {
             const refreshedToken = await this.refreshToken();
@@ -173,15 +173,17 @@ export class ZoneminderService {
           resolve(this.getEnabledMonitors(dataMonitors.monitors));
         },
         async err => {
-          if (err && err.statusText) {
+          const zmError: ZmError = err.error;
+          if (!zmError) {
             return reject('Could not connect to ZM Server');
           }
-          const zmError: ZmError = err.error;
           console.error('List Monitors: ' + zmError.data.name);
           if (this.isTokenExpired(zmError)) {
             const refreshedToken = await this.refreshToken();
             if (refreshedToken) {
-              this.listMonitors();
+              setTimeout(() => {
+                return this.listMonitors();
+              }, 2000);
             } else {
               reject(zmError.data.message);
             }
@@ -213,10 +215,10 @@ export class ZoneminderService {
           resolve(loginInfo);
         },
         err => {
-          if (err && err.statusText) {
+          const zmError: ZmError = err.error;
+          if (!zmError) {
             return reject('Could not connect to ZM Server');
           }
-          const zmError: ZmError = err.error;
           console.error('Get New Token: ' + zmError.data.name);
           reject(zmError.data.message);
         }
@@ -252,11 +254,11 @@ export class ZoneminderService {
           resolve(true);
         },
         async err => {
-          if (err && err.statusText) {
+          const zmError: ZmError = err.error;
+          if (!zmError) {
             console.error('Could not connect to ZM Server');
             return resolve(false);
           }
-          const zmError: ZmError = err.error;
           console.error('Authorized Error: ' + zmError.data.name);
           resolve(false);
         }
