@@ -100,7 +100,7 @@ export class ZoneminderService {
         },
         async err => {
           const zmError: ZmError = err.error;
-          if (!zmError) {
+          if (!zmError || !zmError.data) {
             return reject('Could not connect to ZM Server');
           }
           console.error('Get Version Error: ' + zmError.data.name);
@@ -174,7 +174,7 @@ export class ZoneminderService {
         },
         async err => {
           const zmError: ZmError = err.error;
-          if (!zmError) {
+          if (!zmError || !zmError.data) {
             return reject('Could not connect to ZM Server');
           }
           console.error('List Monitors: ' + zmError.data.name);
@@ -216,7 +216,7 @@ export class ZoneminderService {
         },
         err => {
           const zmError: ZmError = err.error;
-          if (!zmError) {
+          if (!zmError || !zmError.data) {
             return reject('Could not connect to ZM Server');
           }
           console.error('Get New Token: ' + zmError.data.name);
@@ -255,7 +255,7 @@ export class ZoneminderService {
         },
         async err => {
           const zmError: ZmError = err.error;
-          if (!zmError) {
+          if (!zmError || !zmError.data) {
             console.error('Could not connect to ZM Server');
             return resolve(false);
           }
