@@ -1,0 +1,10 @@
+{
+  "package": "zone-cameras",
+  "description": "Viewer for ZoneMinder",
+  "name": "Zone Cameras",
+  "gitHubRepoName": "zone-cameras",
+  "gitHubRepoUrl": "git://github.com/cmgustavo/zone-cameras.git",
+  "gitHubRepoBugs": "https://github.com/cmgustavo/zone-cameras/issues",
+  "version": "0.0.1",
+  "androidVersion": "00000001"
+}
