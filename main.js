@@ -4,7 +4,7 @@ const path = require('path');
 const url = require('url');
 const os = require('os');
 
-const appConfig = require(path.join(__dirname, '/../www/assets/data.json'));
+const appConfig = require(path.join(__dirname, '/www/assets/data.json'));
 console.log('Desktop: ' + appConfig.name + ' v' + appConfig.version);
 
 // Keep a global reference of the window object, if you don't, the window will
@@ -35,7 +35,7 @@ function createWindow() {
   // and load the index.html of the app.
   win.loadURL(
     url.format({
-      pathname: path.join(__dirname, '/../www/index.html'),
+      pathname: path.join(__dirname, '/www/index.html'),
       protocol: 'file:',
       slashes: true
     })
@@ -127,7 +127,7 @@ function createMenu() {
 
 app.setAsDefaultProtocolClient('zone-cameras');
 app.setVersion(appConfig.version);
-app.name = appConfig.nameCase;
+app.name = appConfig.name;
 
 const getHomeDirPath = platform => {
   switch (platform) {
