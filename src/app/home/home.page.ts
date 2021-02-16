@@ -39,7 +39,11 @@ export class HomePage {
   }
 
   async setMonitors() {
-    this.monitors = await this.zmService.getMonitors();
+    try {
+      this.monitors = await this.zmService.getMonitors();
+    } catch (e) {
+      this.logout();
+    }
   }
 
   openMonitor(monitor: ZmMonitor) {

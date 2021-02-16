@@ -220,6 +220,7 @@ export class ZoneminderService {
             return reject('Could not connect to ZM Server');
           }
           console.error('Get New Token: ' + zmError.data.name);
+          this.removeData(); // Nothin to do here
           reject(zmError.data.message);
         }
       );
