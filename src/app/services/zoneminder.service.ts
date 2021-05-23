@@ -63,25 +63,29 @@ export class ZoneminderService {
 
   login(loginData: LoginForm): Promise<string> {
     return new Promise((resolve, reject) => {
-      this.getToken(loginData)
-        .then(async newToken => {
-          console.log('API Version: ' + newToken.apiversion);
-          // Verify valid user
-          const authorized = await this.isAuthorized(
-            loginData.host,
-            newToken.access_token
-          );
-          if (!authorized) {
-            return reject('Invalid Username or Password');
-          }
-          console.log('Connected to ZM Server: ', newToken.version);
-          this.setLogin(loginData);
-          this.setToken(newToken);
-          resolve();
-        })
-        .catch(err => {
-          reject(err);
-        });
+      this.getCookie(loginData.host, loginData.user, loginData.password).then(
+        _ => {
+          this.getToken(loginData)
+            .then(async newToken => {
+              console.log('API Version: ' + newToken.apiversion);
+              // Verify valid user
+              const authorized = await this.isAuthorized(
+                loginData.host,
+                newToken.access_token
+              );
+              if (!authorized) {
+                return reject('Invalid Username or Password');
+              }
+              console.log('Connected to ZM Server: ', newToken.version);
+              this.setLogin(loginData);
+              this.setToken(newToken);
+              //resolve();
+            })
+            .catch(err => {
+              reject(err);
+            });
+        }
+      );
     });
   }
 
@@ -195,6 +199,33 @@ export class ZoneminderService {
     });
   }
 
+  private getCookie(
+    host: string,
+    user: string,
+    password: string
+  ): Promise<boolean> {
+    return new Promise(resolve => {
+      const url = PREFIX_URL + host + '/zm/index.php?view=login';
+      const data = {
+        username: user,
+        password: password
+      };
+      const headers = new HttpHeaders({
+        'Content-Type': 'text/html; charset=UTF-8'
+      });
+      this.http.post(url, data, { headers, withCredentials: true }).subscribe(
+        res => {
+          console.log('RESPONSE GET: ', res);
+          return resolve(true);
+        },
+        err => {
+          console.log('ERROR GET', err);
+          return resolve(true);
+        }
+      );
+    });
+  }
+
   private getToken(
     loginData: LoginForm,
     refreshToken?: string
@@ -206,13 +237,13 @@ export class ZoneminderService {
       refresh_token: refreshToken
     };
     const headers = new HttpHeaders({
-      'Content-Type': 'application/json',
-      Accept: 'application/json'
+      'Content-Type': 'application/json'
     });
     return new Promise((resolve, reject) => {
-      this.http.post(url, data, { headers }).subscribe(
-        (loginInfo: ZmToken) => {
-          resolve(loginInfo);
+      this.http.post(url, data, { withCredentials: true, headers }).subscribe(
+        response => {
+          console.log('######## responseee', response);
+          //resolve(response);
         },
         err => {
           const zmError: ZmError = err.error;
@@ -220,7 +251,7 @@ export class ZoneminderService {
             return reject('Could not connect to ZM Server');
           }
           console.error('Get New Token: ' + zmError.data.name);
-          this.removeData(); // Nothin to do here
+          //this.removeData(); // Nothin to do here
           reject(zmError.data.message);
         }
       );
